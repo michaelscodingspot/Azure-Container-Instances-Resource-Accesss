@@ -19,12 +19,14 @@ namespace AciResourceAccess
         private AzureAccessToken _accessToken;
         private readonly SemaphoreSlim _accessTokenGetterSemaphore = new SemaphoreSlim(1, 1);
 
-        public AciResourceAccess(Configuration configuration, RestService restService, ILogger<AciResourceAccess> logger)
+        public AciResourceAccess(Configuration configuration, ILogger<AciResourceAccess> logger = null)
         {
             _configuration = configuration;
-            _restService = restService;
+            _restService = new RestService();
             _logger = logger;
         }
+
+        
 
         public async Task<AciContainer> CreateContainer(ContainerCreationConfiguration creationConfig)
         {
@@ -115,7 +117,7 @@ namespace AciResourceAccess
             }
             catch (Exception ex)
             {
-                _logger.LogError("GetContainerGroupStatus: Error while sending Get request: {0}", ex);
+                _logger?.LogError("GetContainerGroupStatus: Error while sending Get request: {0}", ex);
                 return ContainerStatus.DELETED;
             }
 
@@ -182,15 +184,15 @@ namespace AciResourceAccess
         {
             try
             {
-                _logger.LogInformation("log-Attempting to get access token with MSI");
+                _logger?.LogInformation("log-Attempting to get access token with MSI");
                 var azureServiceTokenProvider = new AzureServiceTokenProvider();
                 var accessTokenStr = await azureServiceTokenProvider.GetAccessTokenAsync("https://management.azure.com/");
                 return accessTokenStr;
             }
             catch (Exception e)
             {
-                _logger.LogError("Error during 'GetNewAccessTokenWithMSI'");
-                _logger.LogError(e.ToString());
+                _logger?.LogError("Error during 'GetNewAccessTokenWithMSI'");
+                _logger?.LogError(e.ToString());
                 throw;
             }
 

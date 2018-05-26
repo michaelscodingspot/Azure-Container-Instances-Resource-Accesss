@@ -98,15 +98,6 @@ namespace AciResourceAccess
         public string type { get; set; }
         public Error error { get; set; }
 
-        public string Url
-        {
-            get
-            {
-                var ip = properties?.ipAddress?.ip;
-                return ip == null ? null : $"http://{ip}:12345";
-            }
-        }
-
         public string State
         {
             get

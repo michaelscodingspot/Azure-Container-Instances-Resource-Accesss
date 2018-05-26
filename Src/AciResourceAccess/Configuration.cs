@@ -33,6 +33,7 @@ namespace AciResourceAccess
             string imageRegistryPassword, string resourceGroup)
         {
             Configuration config = CreateBasicConfig(azureSubscriptionId, imageRegistryServer, imageRegistryUsername, imageRegistryPassword, resourceGroup);
+            config.AuthorizationType = AuthorizationType.MSI;
             return config;
         }
 
@@ -41,6 +42,7 @@ namespace AciResourceAccess
             string clientId, string clientSecret, string tenantId)
         {
             Configuration config = CreateBasicConfig(azureSubscriptionId, imageRegistryServer, imageRegistryUsername, imageRegistryPassword, resourceGroup);
+            config.AuthorizationType = AuthorizationType.ActiveDirectoryRegisteredApp;
             config.ClientId = clientId;
             config.ClientSecret = clientSecret;
             config.TenantId = tenantId;
@@ -56,7 +58,6 @@ namespace AciResourceAccess
                 ImageRegistryUsername = imageRegistryUsername,
                 ImageRegistryPassword = imageRegistryPassword,
                 ResourceGroup = resourceGroup,
-                AuthorizationType = AuthorizationType.MSI
             };
         }
 
