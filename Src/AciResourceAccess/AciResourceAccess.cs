@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 namespace AciResourceAccess
 {
-    public  class AciResourceAccess
+    public class AciResourceAccess
     {
         private readonly Configuration _configuration;
         private readonly RestService _restService;
@@ -105,6 +105,22 @@ namespace AciResourceAccess
             var container = await _restService.SendHttpPutRequest<AciContainer, AciContainer>(url, containerRequest, await GetAccessToken());
 
             return container;
+        }
+
+        public async Task<AciContainer> GetContainer(string containerGroupName)
+        {
+            var url = GetAzureManagementUrl(containerGroupName);
+            try
+            {
+                return await _restService.SendHttpGetRequest<AciContainer>(url, await GetAccessToken());
+            }
+            catch (Exception ex)
+            {
+                _logger?.LogError("GetContainerGroupStatus: Error while sending Get request: {0}", ex);
+                throw;
+            }
+
+
         }
 
         public async Task<ContainerStatus> GetContainerGroupStatus(string containerGroupName)

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using AciResourceAccess;
+using ACI = AciResourceAccess;
 
 namespace SampleApp
 {
@@ -9,8 +10,14 @@ namespace SampleApp
     {
         static void Main(string[] args)
         {
-            //Console.WriteLine("Hello World!");
-            var configuration = ConfigurationFactory.CreateConfigWithActiveDirectoryAppAuth(
+            RunSample().GetAwaiter().GetResult();
+
+            Console.ReadLine();
+        }
+
+        private static async Task RunSample()
+        {
+            var azureSubscriptionConfiugration = ACI.ConfigurationFactory.CreateConfigWithActiveDirectoryAppAuth(
                 azureSubscriptionId: "a187256a-2ebe-4a23-8bfc-8e194d8eagh7",
                 resourceGroup: "MyResourceGroup",
                 clientId: "n21d9e2f-1f1c-45cf-q7r7-79c363e5c740",
@@ -21,33 +28,46 @@ namespace SampleApp
                 imageRegistryPassword: "/bf54vMBFEjOXQgTh/PzTwWj9fhcydn3"
             );
 
-            var resourceAccess = new AciResourceAccess.AciResourceAccess(configuration);
-            var containerCreationConfig = new ContainerCreationConfiguration()
+            var containerCreationConfiguration = new ACI.ContainerCreationConfiguration()
             {
-                ContainerName = "my-container",//For some reason, container name can't be in Pascal case. Kebab case works.
+                //For some reason, container name can't be in Pascal case. Kebab case works.
+                ContainerName = "my-container",
                 CpuCore = 2,
                 MemoryInGB = 4,
                 ImageName = "mycontainerregistry.azurecr.io/myimage",
                 Port = 12345,
                 Location = "east us",
-                OS = ContainerCreationConfiguration.OsType.Windows
+                OS = ACI.ContainerCreationConfiguration.OsType.Windows
             };
 
             try
             {
-                var container = resourceAccess.CreateContainer(containerCreationConfig).GetAwaiter().GetResult();
-                Console.WriteLine("Container created successfully on ip " + container.properties.ipAddress.ip);
+                var resourceAccess = new ACI.AciResourceAccess(azureSubscriptionConfiugration);
+                var container = resourceAccess.CreateContainer(containerCreationConfiguration).GetAwaiter().GetResult();
+                Console.WriteLine("Container created successfully on ip "
+                                  + container.properties.ipAddress.ip);
+
+                //Get container object
+                Thread.Sleep(1000);
+                container = await resourceAccess.GetContainer("my-container");
+                Console.WriteLine("Container status now is: " + container.properties.containers.First()
+                                      .properties.instanceView.currentState.state); //'Waiting' because it's still pulling image
+
+                //Alternatively, we can use 'GetContainerGroupStatus' to get status
+                await Task.Delay(TimeSpan.FromMinutes(7));//Wait for image to finish pulling
+                var containerStatus = await resourceAccess.GetContainerGroupStatus("my-container");
+                Console.WriteLine("Container status now is: " + containerStatus);//ContainerStatus.RUNNING
+
+                //Delete container
+                await resourceAccess.DeleteContainer("my-container");
+                containerStatus = await resourceAccess.GetContainerGroupStatus("my-container");
+                Console.WriteLine("Container status now is: " + containerStatus);//ContainerStatus.DELETED
+
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error creating container: {e}");
+                Console.WriteLine($"Error occured: {e}");
             }
-
-            Console.ReadLine();
-
-
-
-
         }
     }
 }
