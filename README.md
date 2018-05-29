@@ -1,6 +1,15 @@
 # Azure-Container-Instances-Resource-Accesss
 A class library to easily create, query and delete containers with Azure Container Instances.
 
+This library allows to:
+- Create container instances with most initialization options
+- Query container instances - Get IP, container status, etc.
+- Delete container instances
+- Supports authentication with Managed Service Identity (MSI)
+- Supports authentication with Azure Active Directory application registration.
+
+Read [this article](http://michaelscodingspot.com) to better understand Azure Container Instances and this library support.
+
 Example of use:
 
 ~~~~
@@ -43,5 +52,4 @@ catch (Exception e)
 }
 ~~~~
 
-This library allows you
 
