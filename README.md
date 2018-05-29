@@ -52,4 +52,7 @@ catch (Exception e)
 }
 ~~~~
 
+Not all options are supported. For example, mouning volume drives. 
+I'll be happy for any pull requests and issues about these.
+
 
